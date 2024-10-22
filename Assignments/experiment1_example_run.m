@@ -6,13 +6,16 @@ ifi = 1 / screenFps;
 deadlinePct = 0.2; % percent of a screen refresh interval by which 
 whileLoopDelta = 0.001; % 1 ms
 % to return control in while loops
-imageFolder = '/Users/mark/Teaching/PSY427_627/datasets/fLoc_stimuli/';
+
+imageFolder = '~/Teaching/PSY427_627/datasets/fLoc_stimuli/';
+imageFolder = string(py.os.path.expanduser(imageFolder));
 subjectNumber = 1;
-fullScreen = false; % false for debugging, true to run
+fullScreen = true; % false for debugging, true to run
 imageSize = [500,500];
 textColor = [255, 255, 255];
 fixationColor = [255, 235, 0]; % a nice yellow
 fixationSize = 12; % pixels
+screenColor = [128,128,128];
 % Choose screen, in case you want to display on another screen (e.g. the 
 % projector in an fMRI experiment setup)
 screens=Screen('Screens');
@@ -20,7 +23,9 @@ screens=Screen('Screens');
 % a best guess about where you want the stimulus displayed.
 screenNumber=max(screens);
 % File to save
-sfile = sprintf('subject%02d_%s', subjectNumber, datestr(now, 'yyyy_mm_dd_HH_MM'));
+date = datetime('now');
+date.Format = 'yyyy_MM_dd_hh_mm';
+sfile = sprintf('subject%02d_%s', subjectNumber, date);
 % Instructions
 instructions_choice = 'Please press the button you want to use to respond';
 disallowedKeys = {'ESCAPE', 'q'};
@@ -39,9 +44,11 @@ instructions = strjoin(instructions, '\n');
 
 if fullScreen
     screenRect = [];
+    [width_mm, height_mm] = Screen('DisplaySize', screenNumber);
+    res = Screen('Resolution', screenNumber);
+    screenSize = [res.width, res.height];
 else
     screenSize = [800, 600]; % []
-    screenColor = [128,128,128];
     screenUpperLeft = [200,200];
     screenRect = [screenUpperLeft, screenUpperLeft + screenSize];
 end
@@ -51,7 +58,7 @@ yCenter = screenSize(2) / 2;
 fixationRect = CenterRectOnPoint([0 0 fixationSize fixationSize], xCenter, yCenter);
 
 % Skip sync tests for now (sync tests cause issues on Mac OS)
-Screen('Preference', 'SkipSyncTests', 1);         
+Screen('Preference', 'SkipSyncTests', 0);
 % Load `trials` variable
 load(sprintf('subject%02d_plan.mat', subjectNumber));
 nTrials = length(trials);
@@ -166,15 +173,16 @@ try
             end
         end
         flipOffset = Screen('Flip', win, t0 + trials{itrial, 3});
+        fprintf('Image time: %0.04f\n', flipOffset-flipOnset);
         %disp(sprintf('%0.4f', flipOffset - flipOnset))
     end
-catch ME
+catch %ME
     % Close screen
     sca;
     % Enable keystrokes in Matlab window
     ListenChar(0);
     % Close trial file
-    fclose(fid);
+    %fclose(fid);
     % Display the error we caught
     error(lasterror)
 end
@@ -183,4 +191,4 @@ sca;
 % Enable keystrokes in Matlab window
 ListenChar(0);
 % Close trial file
-fclose(fid);
+%fclose(fid);

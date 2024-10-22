@@ -29,7 +29,8 @@ block_sub_categories = {
 % Image file location (assumes all images are in same folder, as they 
 % should be if you downloaded and unzipped fLoc from here: 
 % )
-imageFolder = '/Users/mark/Teaching/PSY427_627/datasets/fLoc_stimuli/';
+imageFolder = '~/Teaching/PSY427_627/datasets/fLoc_stimuli/';
+imageFolder = string(py.os.path.expanduser(imageFolder));
 imageType = 'jpg';
 
 %% Experiment parameters, computed
